@@ -47,6 +47,16 @@ The two are, however, entirely different pieces of the conceptual puzzle, with J
 The JSON format is an open format, with its own [homepage](https://www.json.org/), and specifications published in the [ECMA-404](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/) and [RFC-8259](https://datatracker.ietf.org/doc/html/rfc8259) documents from ECMA and the IETF respectively.
 In particular, it is not managed or developed by the JSON Schema team, who simply make use of the format.
 
+### JSON Hyper-Schema
+
+JSON Hyper-Schema extends JSON Schema, offering a vocabulary to annotate JSON documents with hypermedia controls. This extension facilitates the description of links and actions that can be executed on JSON data, making it a potent tool for developing hypermedia-driven APIs.
+
+Built upon the foundation of JSON Schema, JSON Hyper-Schema introduces additional keywords to specify hyperlinks and instructions for handling remote JSON resources in hypermedia environments like HTTP. The Link Description Object (LDO) is a core concept, encapsulating information about available actions. LDO properties include "rel" (relation type), "href" (URI template), and "templateRequired" (required template variables).
+
+The "href" keyword in JSON Hyper-Schema is crucial, allowing the description of URLs using flexible URI templates with variables resolved against instance data. Concepts like "base" establish the URI base for references, aiding in constructing relative URLs. The "links" property associates Link Description Objects with instances, enabling the definition of multiple links and their relations.
+
+In conclusion, JSON Hyper-Schema enhances JSON Schema, introducing a vocabulary for hypermedia controls and enabling the creation of more interactive APIs. It provides a structured approach to articulate links and actions on JSON documents, enhancing client understanding and interaction with remote JSON resources.
+
 ### keyword
 
 A property appearing within a [schema](#schema) object.
