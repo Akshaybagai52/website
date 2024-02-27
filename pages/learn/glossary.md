@@ -49,13 +49,13 @@ In particular, it is not managed or developed by the JSON Schema team, who simpl
 
 ### JSON Hyper-Schema
 
-JSON Hyper-Schema extends JSON Schema, offering a vocabulary to annotate JSON documents with hypermedia controls. This extension facilitates the description of links and actions that can be executed on JSON data, making it a potent tool for developing hypermedia-driven APIs.
+JSON Hyper-Schema extends JSON Schema, offering a [vocabulary](https://json-schema.org/draft/2019-09/json-schema-hypermedia) to annotate JSON documents with hypermedia controls. This extension facilitates the description of links and actions that can be executed on JSON data, making it a potent tool for developing hypermedia-driven APIs.
 
-Built upon the foundation of JSON Schema, JSON Hyper-Schema introduces additional keywords to specify hyperlinks and instructions for handling remote JSON resources in hypermedia environments like HTTP. The Link Description Object (LDO) is a core concept, encapsulating information about available actions. LDO properties include "rel" (relation type), "href" (URI template), and "templateRequired" (required template variables).
+The essence of JSON Hyper-Schema lies in its ability to define links and actions that can be executed on JSON data. This is achieved through the use of the links keyword, which allows for the creation of dynamic, interactive data representations. For example, a JSON document representing a blog post might include an "author" property. The JSON Hyper-Schema that describes this document could include a hypermedia control that uses the author's identifier to construct a link to the author's profile. This link is a template that, when applied with the actual data, provides direct access to the author's profile, enhancing the user experience by offering a seamless navigation experience.
 
-The "href" keyword in JSON Hyper-Schema is crucial, allowing the description of URLs using flexible URI templates with variables resolved against instance data. Concepts like "base" establish the URI base for references, aiding in constructing relative URLs. The "links" property associates Link Description Objects with instances, enabling the definition of multiple links and their relations.
+This approach not only simplifies the interaction with JSON data but also enhances the overall user experience by providing direct access to related resources without the need for additional requests. It allows developers to create rich, interactive JSON documents that can dynamically adapt to the data they represent, making JSON Hyper-Schema a potent tool for developing hypermedia-driven APIs.
 
-In conclusion, JSON Hyper-Schema enhances JSON Schema, introducing a vocabulary for hypermedia controls and enabling the creation of more interactive APIs. It provides a structured approach to articulate links and actions on JSON documents, enhancing client understanding and interaction with remote JSON resources.
+To sum up, JSON Hyper-Schema enhances JSON Schema by introducing features tailored for hypermedia controls. This facilitates the creation of more interactive APIs without disrupting existing JSON HTTP APIs. It adds a layer of interactivity to JSON documents, making it easier for clients to understand and interact with remote JSON resources.
 
 ### keyword
 
