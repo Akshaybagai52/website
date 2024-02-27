@@ -13,7 +13,7 @@ export async function getStaticProps(args: any) { return getStaticMarkdownProps(
 
 export default function StaticMarkdownPage ({ frontmatter, content }: { frontmatter: any, content: any }) {
   const newTitle = 'JSON Schema - ' + frontmatter.title
-
+ 
   return (
     <SectionContext.Provider value={frontmatter.section || null}>
       <Head>
