@@ -70,6 +70,7 @@ const getDocsPath = [
   '/overview/sponsors',
   '/overview/similar-technologies',
   '/overview/code-of-conduct',
+  '/overview/faq',
 ];
 const getStartedPath = [
   '/learn/json-schema-examples',
@@ -126,7 +127,7 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
   const pathWtihoutFragment = extractPathWithoutFragment(router.asPath);
   return (
     <div className='max-w-[1400px] mx-auto flex flex-col items-center'>
-      <section>
+      <section className='w-full'>
         <div className='bg-primary w-full h-12 mt-[4.5rem] z-150 flex relative flex-col justify-between items-center lg:hidden'>
           <div
             className='z-[150] flex w-full bg-primary justify-between items-center mt-2'
@@ -176,7 +177,9 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <div
-          className={`z-[150] absolute top-10 mt-24 left-0 h-full w-screen bg-white transform ${open ? '-translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out filter drop-shadow-md `}
+          className={`z-[150] absolute top-10 mt-24 left-0 h-full w-screen bg-white transform ${
+            open ? '-translate-x-0' : '-translate-x-full'
+          } transition-transform duration-300 ease-in-out filter drop-shadow-md `}
         >
           <div className='flex flex-col mt-4'>
             <DocsNav />
@@ -286,6 +289,7 @@ export const DocsNav = () => {
             label='Similar Technologies'
           />
           <DocLink uri='/overview/code-of-conduct' label='Code of Conduct' />
+          <DocLink uri='/overview/faq' label='Faq' />
         </div>
       </div>
       {/* Get Started */}
