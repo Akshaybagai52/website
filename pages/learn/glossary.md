@@ -55,10 +55,6 @@ The essence of JSON Hyper-Schema lies in its ability to define links and actions
 
 In other words, JSON Hyper-Schema extends JSON Schema by introducing features for creating hypermedia controls. This facilitates the creation of interactive APIs and ensures compatibility with existing JSON HTTP APIs, maintaining a seamless integration. It adds a layer of interactivity to JSON documents, making it easier to interact with remote JSON resources.
 
-### JSON pointer
-
-[JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) is a string syntax for identifying a value at a specified location within a JSON document. It serves to precisely reference specific parts of the document for retrieval or manipulation. A subschema is often identified using a JSON Pointer, specifying its location within the containing resource.
-
 ### keyword
 
 A property appearing within a [schema](#schema) object.
