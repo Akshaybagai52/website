@@ -12,9 +12,13 @@ import { useTheme } from 'next-themes';
 const DocLink = ({
   uri,
   label,
+  onClick,
+  setOpen,
 }: {
   uri: string;
   label: string | React.ReactNode;
+  onClick?: () => void;
+  setOpen: (open: boolean) => void;
 }) => {
   const router = useRouter();
   const url = new URL(`${router.asPath}`, HOST);
@@ -25,11 +29,15 @@ const DocLink = ({
   return (
     <Link
       href={uri}
-      className={classnames('text-sm block border-l-2 py-1 pl-2', {
+      className={classnames('text-sm block py-1 pl-2', {
         '  font-medium': !isActive,
-        'text-primary dark:text-[#007bff] text-bold border-l-primary  font-semibold':
+        'text-primary dark:text-[#007bff] text-bold border-l-2 border-l-primary  font-semibold':
           isActive,
       })}
+      onClick={() => {
+        if (onClick) onClick();
+        setOpen(false);
+      }}
     >
       {label}
     </Link>
@@ -39,9 +47,13 @@ const DocLink = ({
 const DocLinkBlank = ({
   uri,
   label,
+  onClick,
+  setOpen,
 }: {
   uri: string;
   label: string | React.ReactNode;
+  onClick?: () => void;
+  setOpen: (open: boolean) => void;
 }) => {
   const router = useRouter();
   const url = new URL(`${router.asPath}`, HOST);
@@ -52,12 +64,17 @@ const DocLinkBlank = ({
   return (
     <Link
       href={uri}
-      className={classnames('text-sm block border-l-2 py-1 pl-2', {
-        '  font-medium': !isActive,
-        'text-primary text-bold border-l-primary font-semibold': isActive,
+      className={classnames('text-sm block  py-1 pl-2', {
+        'font-medium': !isActive,
+        'text-primary text-bold border-l-2 border-l-primary font-semibold':
+          isActive,
       })}
       target='_blank'
       rel='noopener noreferrer'
+      onClick={() => {
+        if (onClick) onClick();
+        setOpen(false);
+      }}
     >
       {label}
     </Link>
@@ -97,7 +114,7 @@ const getReferencePath = [
   '/understanding-json-schema/reference/comments',
   '/understanding-json-schema/reference/conditionals',
   '/understanding-json-schema/reference/const',
-  '/understanding-json-schema/reference/enums',
+  '/understanding-json-schema/reference/enum',
   '/understanding-json-schema/reference/non_json_data',
   '/understanding-json-schema/reference/null',
   '/understanding-json-schema/reference/numeric',
@@ -130,12 +147,21 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
   const handleRotate = () => setRotateChevron(!rotateChevron);
   const rotate = rotateChevron ? 'rotate(180deg)' : 'rotate(0)';
   const pathWtihoutFragment = extractPathWithoutFragment(router.asPath);
+  useEffect(() => {
+    if (window) {
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 1024) {
+          setOpen(false);
+        }
+      });
+    }
+  }, [typeof window !== 'undefined']);
   return (
     <div className='max-w-[1400px] mx-auto flex flex-col items-center'>
       <section>
-        <div className='bg-primary w-full h-12 mt-[4.5rem] z-150 flex relative flex-col justify-between items-center lg:hidden'>
+        <div className='bg-primary dark:bg-slate-900 w-full h-12 mt-[4.5rem] z-150 flex relative flex-col justify-center items-center  lg:hidden '>
           <div
-            className='z-[150] flex w-full bg-primary justify-between items-center mt-2'
+            className='z-[150] flex w-full bg-primary dark:bg-slate-900 justify-between items-center'
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
@@ -143,8 +169,8 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
               setOpen(!open);
             }}
           >
-            {pathWtihoutFragment === '/overview/what-is-jsonschema' && (
-              <h3 className='text-white ml-12'>Overview</h3>
+            {getDocsPath.includes(pathWtihoutFragment) && (
+              <h3 className='text-white  ml-12'>Overview</h3>
             )}
             {getStartedPath.includes(pathWtihoutFragment) && (
               <h3 className='text-white ml-12'>Getting Started</h3>
@@ -182,16 +208,16 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <div
-          className={`z-[150] absolute top-10 mt-24 left-0 h-full w-screen bg-white transform ${open ? '-translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out filter drop-shadow-md `}
+          className={`z-[150] absolute top-10 mt-24 left-0 h-full w-screen bg-white dark:bg-slate-900 dark:shadow-lg transform ${open ? '-translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out filter drop-shadow-md `}
         >
-          <div className='flex flex-col mt-4'>
-            <DocsNav />
+          <div className='flex flex-col  dark:bg-slate-900'>
+            <DocsNav open={open} setOpen={setOpen} />
           </div>
         </div>
 
-        <div className='dark:bg-slate-800 max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 mx-4 md:mx-12'>
+        <div className='dark:bg-slate-800 max-w-[1400px] grid grid-cols-1 lg:grid-cols-4 mx-4 md:mx-12'>
           <div className='hidden lg:block mt-24'>
-            <DocsNav />
+            <DocsNav open={open} setOpen={setOpen} />
             <CarbonAds
               className='lg:mt-8 w-4/5 mx-auto lg:ml-4'
               variant='sidebar'
@@ -206,7 +232,12 @@ export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const DocsNav = () => {
+export const DocsNav = ({
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) => {
   const router = useRouter();
 
   /* eslint-disable no-constant-condition */
@@ -249,24 +280,45 @@ export const DocsNav = () => {
   const rotateG = active.getStarted ? 'rotate(180deg)' : 'rotate(0)';
   const rotateR = active.getReference ? 'rotate(180deg)' : 'rotate(0)';
   const rotateSpec = active.getSpecification ? 'rotate(180deg)' : 'rotate(0)';
+
   const { theme } = useTheme();
+
+  const [learn_icon, setLearn_icon] = useState('');
+  const [reference_icon, setReference_icon] = useState('');
+  const [spec_icon, setSpec_icon] = useState('');
+  const [overview_icon, setOverview_icon] = useState('');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      setOverview_icon('/icons/eye-dark.svg');
+      setLearn_icon('/icons/compass-dark.svg');
+      setReference_icon('/icons/book-dark.svg');
+      setSpec_icon('/icons/clipboard-dark.svg');
+    } else {
+      setOverview_icon('/icons/eye.svg');
+      setLearn_icon('/icons/compass.svg');
+      setReference_icon('/icons/book.svg');
+      setSpec_icon('/icons/clipboard.svg');
+    }
+  }, [theme]);
+
   return (
-    <div id='sidebar ' className='lg:mt-8 w-4/5 mx-auto lg:ml-4'>
-      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded'>
+    <div id='sidebar' className='lg:mt-8 w-4/5 mx-auto lg:ml-4'>
+      <div className='my-2 bg-slate-200 dark:bg-slate-900 border-white border lg:border-hidden p-2 rounded'>
         <div
           className='flex justify-between w-full items-center'
           onClick={handleClickDoc}
         >
           <div className='flex  items-center align-middle'>
-            <img
-              src={`${theme === 'dark' ? '/icons/eye-dark.svg' : '/icons/eye.svg'}`}
-              alt='eye icon'
-              className='mr-2'
-            />
+            <img src={`${overview_icon}`} alt='eye icon' className='mr-2' />
             <SegmentHeadline label='Overview' />
           </div>
           <svg
-            style={{ transform: rotate, transition: 'all 0.2s linear' }}
+            style={{
+              transform: rotate,
+              transition: 'all 0.2s linear',
+              cursor: 'pointer',
+            }}
             id='arrow'
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
@@ -289,32 +341,47 @@ export const DocsNav = () => {
           <DocLink
             uri='/overview/what-is-jsonschema'
             label='What is JSON Schema?'
+            setOpen={setOpen}
           />
-          <DocLink uri='/overview/sponsors' label='Sponsors' />
+          <DocLink
+            uri='/overview/sponsors'
+            label='Sponsors'
+            setOpen={setOpen}
+          />
           <DocLink
             uri='/overview/similar-technologies'
             label='Similar Technologies'
+            setOpen={setOpen}
           />
-          <DocLink uri='/overview/code-of-conduct' label='Code of Conduct' />
+          <DocLinkBlank
+            uri='https://landscape.json-schema.org'
+            label='Landscape'
+            setOpen={setOpen}
+          />
+          <DocLink
+            uri='/overview/code-of-conduct'
+            label='Code of Conduct'
+            setOpen={setOpen}
+          />
         </div>
       </div>
       {/* Get Started */}
 
-      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded'>
+      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded border border-white  lg:border-hidden '>
         <div
           className='flex justify-between w-full items-center'
           onClick={handleClickGet}
         >
           <div className='flex  items-center align-middle'>
-            <img
-              src={`${theme === 'dark' ? '/icons/compass-dark.svg' : '/icons/compass.svg'}`}
-              alt='eye icon'
-              className='mr-2'
-            />
+            <img src={`${learn_icon}`} alt='compass icon' className='mr-2' />
             <SegmentHeadline label='Getting Started' />
           </div>
           <svg
-            style={{ transform: rotateG, transition: 'all 0.2s linear' }}
+            style={{
+              transform: rotateG,
+              transition: 'all 0.2s linear',
+              cursor: 'pointer',
+            }}
             id='arrow'
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
@@ -337,35 +404,45 @@ export const DocsNav = () => {
           <DocLink
             uri='/learn/getting-started-step-by-step'
             label='Creating your first schema'
+            setOpen={setOpen}
           />
           <SegmentSubtitle label='Examples' />
           <div className='pl-4 pb-1 pt-1'>
             <DocLink
               uri='/learn/miscellaneous-examples'
               label='Miscellaneous examples'
+              setOpen={setOpen}
             />
-            <DocLink uri='/learn/file-system' label='Modelling a file system' />
-            <DocLink uri='/learn/json-schema-examples' label='Other examples' />
+            <DocLink
+              uri='/learn/file-system'
+              label='Modelling a file system'
+              setOpen={setOpen}
+            />
+            <DocLink
+              uri='/learn/json-schema-examples'
+              label='Other examples'
+              setOpen={setOpen}
+            />
           </div>
         </div>
       </div>
       {/* Reference */}
 
-      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded'>
+      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded border border-white lg:border-hidden '>
         <div
           className='flex justify-between w-full items-center'
           onClick={handleClickReference}
         >
           <div className='flex  items-center align-middle'>
-            <img
-              src={`${theme === 'dark' ? '/icons/book-dark.svg' : '/icons/book.svg'}`}
-              alt='eye icon'
-              className='mr-2'
-            />
+            <img src={`${reference_icon}`} alt='book icon' className='mr-2' />
             <SegmentHeadline label='Reference' />
           </div>
           <svg
-            style={{ transform: rotateR, transition: 'all 0.2s linear' }}
+            style={{
+              transform: rotateR,
+              transition: 'all 0.2s linear',
+              cursor: 'pointer',
+            }}
             id='arrow'
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
@@ -385,139 +462,172 @@ export const DocsNav = () => {
           className={classnames('ml-6', { hidden: !active.getReference })}
           id='reference'
         >
-          <DocLink uri='/learn/glossary' label='JSON Schema Glossary' />
+          <DocLink
+            uri='/learn/glossary'
+            label='JSON Schema Glossary'
+            setOpen={setOpen}
+          />
           <DocLinkBlank
             uri='https://www.learnjsonschema.com/'
             label='Learn JSON Schema'
+            setOpen={setOpen}
           />
           <DocLink
             uri='/understanding-json-schema'
             label='Understanding JSON Schema'
+            setOpen={setOpen}
           />
           <div className='pl-4 pb-1 pt-1'>
             <DocLink
               uri='/understanding-json-schema/conventions'
               label='Conventions used'
+              setOpen={setOpen}
             />
             <DocLink
               uri='/understanding-json-schema/about'
               label='What is a schema?'
+              setOpen={setOpen}
             />
             <DocLink
               uri='/understanding-json-schema/basics'
               label='The basics'
+              setOpen={setOpen}
             />
             <DocLink
               uri='/understanding-json-schema/reference'
               label='JSON Schema Reference'
+              setOpen={setOpen}
             />
             <div className='pl-4 pb-1 pt-1'>
               <DocLink
                 uri='/understanding-json-schema/reference/type'
                 label='Type-specific keywords'
+                setOpen={setOpen}
               />
               <div className='pl-4 pb-1 pt-1'>
                 <DocLink
                   uri='/understanding-json-schema/reference/string'
                   label='string'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/regular_expressions'
                   label='regular expressions'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/numeric'
                   label='numeric types'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/object'
                   label='object'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/array'
                   label='array'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/boolean'
                   label='boolean'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/null'
                   label='null'
+                  setOpen={setOpen}
                 />
               </div>
               <DocLink
                 uri='/understanding-json-schema/reference/generic'
                 label='Generic keywords'
+                setOpen={setOpen}
               />
               <div className='pl-4 pb-1 pt-1'>
                 <DocLink
                   uri='/understanding-json-schema/reference/annotations'
                   label='Annotations'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/comments'
                   label='Comments'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/enum'
                   label='Enumerated values'
+                  setOpen={setOpen}
                 />
                 <DocLink
                   uri='/understanding-json-schema/reference/const'
                   label='Constant values'
+                  setOpen={setOpen}
                 />
               </div>
               <DocLink
                 uri='/understanding-json-schema/reference/non_json_data'
                 label='Media: string-encoding non-JSON data'
+                setOpen={setOpen}
               />
               <DocLink
                 uri='/understanding-json-schema/reference/combining'
                 label='Schema Composition'
+                setOpen={setOpen}
               />
               <DocLink
                 uri='/understanding-json-schema/reference/conditionals'
                 label='Applying Subschemas Conditionally'
+                setOpen={setOpen}
               />
               <DocLink
                 uri='/understanding-json-schema/reference/schema'
                 label='Declaring a Dialect'
+                setOpen={setOpen}
               />
             </div>
             <DocLink
               uri='/understanding-json-schema/structuring'
               label='Structuring a complex schema'
+              setOpen={setOpen}
             />
           </div>
-          <DocLink uri='/implementers' label='For implementers' />
+          <DocLink
+            uri='/implementers'
+            label='For implementers'
+            setOpen={setOpen}
+          />
           <div className='pl-4 pb-1 pt-1'>
             <DocLink
               uri='/implementers/interfaces'
               label='Common Interfaces across Implementations'
+              setOpen={setOpen}
             />
           </div>
         </div>
       </div>
       {/* Specification */}
 
-      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded'>
+      <div className='mb-2 bg-slate-200 dark:bg-slate-900 p-2 rounded border border-white lg:border-hidden '>
         <div
           className='flex justify-between w-full items-center'
           onClick={handleClickSpec}
         >
           <div className='flex  items-center align-middle'>
-            <img
-              src={`${theme === 'dark' ? '/icons/clipboard-dark.svg' : '/icons/clipboard.svg'}   `}
-              alt='eye icon'
-              className='mr-2'
-            />
+            <img src={`${spec_icon}`} alt='clipboard icon' className='mr-2' />
             <SegmentHeadline label='Specification' />
           </div>
           <svg
             id='arrow'
             className='arrow'
-            style={{ transform: rotateSpec, transition: 'all 0.2s linear' }}
+            style={{
+              transform: rotateSpec,
+              transition: 'all 0.2s linear',
+              cursor: 'pointer',
+            }}
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
             height='32'
@@ -536,34 +646,55 @@ export const DocsNav = () => {
           className={classnames('ml-6', { hidden: !active.getSpecification })}
           id='specification'
         >
-          <DocLink uri='/specification' label='Overview' />
-          <DocLink uri='/draft/2020-12/release-notes' label='2020-12 notes' />
-          <DocLink uri='/draft/2019-09/release-notes' label='2019-09 notes' />
+          <DocLink uri='/specification' label='Overview' setOpen={setOpen} />
+          <DocLink
+            uri='/specification-links'
+            label='Specification Links'
+            setOpen={setOpen}
+          />
+          <DocLink
+            uri='/draft/2020-12/release-notes'
+            label='2020-12 notes'
+            setOpen={setOpen}
+          />
+          <DocLink
+            uri='/draft/2019-09/release-notes'
+            label='2019-09 notes'
+            setOpen={setOpen}
+          />
           <DocLink
             uri='/draft-07/json-schema-release-notes'
             label='draft-07 notes'
+            setOpen={setOpen}
           />
           <DocLink
             uri='/draft-06/json-schema-release-notes'
             label='draft-06 notes'
+            setOpen={setOpen}
           />
-          <DocLink uri='/draft-05/readme' label='draft-05 notes' />
+          <DocLink
+            uri='/draft-05/readme'
+            label='draft-05 notes'
+            setOpen={setOpen}
+          />
           <SegmentSubtitle label='JSON Hyper-Schema' />
           <div className='pl-4 pb-1 pt-1'>
             <DocLink
               uri='/draft/2019-09/release-notes#hyper-schema-vocabulary'
               label='2019-09 notes'
+              setOpen={setOpen}
             />
             <DocLink
               uri='/draft-07/json-hyper-schema-release-notes'
               label='draft-07 notes'
+              setOpen={setOpen}
             />
             <DocLink
               uri='/draft-06/json-hyper-schema-release-notes'
               label='draft-06 notes'
+              setOpen={setOpen}
             />
           </div>
-          <DocLink uri='/specification-links' label='Specification Links' />
         </div>
       </div>
     </div>

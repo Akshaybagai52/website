@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { getLayout } from '../components/SiteLayout';
 import { DocSearch } from '@docsearch/react';
 import fs from 'fs';
@@ -15,6 +15,11 @@ import { GetStaticProps } from 'next';
 import axios from 'axios';
 import ical from 'node-ical';
 import moment from 'moment-timezone';
+import { useTheme } from 'next-themes';
+
+// apiKey and appId are set in the .env.local file
+const algoliaAppId: string = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID as string;
+const algoliaApiKey: string = process.env.NEXT_PUBLIC_ALGOLIA_API_KEY as string;
 
 /* eslint-enable */
 export const getStaticProps: GetStaticProps = async () => {
@@ -53,7 +58,7 @@ export const getStaticProps: GetStaticProps = async () => {
   }
   // Example usage:
   const remoteICalUrl =
-    'https://calendar.google.com/calendar/ical/c_8r4g9r3etmrmt83fm2gljbatos%40group.calendar.google.com/public/basic.ics'; // Replace with the actual URL
+    'https://calendar.google.com/calendar/ical/info%40json-schema.org/public/basic.ics'; // Replace with the actual URL
   const datesInfo = await fetchRemoteICalFile(remoteICalUrl)
     .then((icalData) => printEventsForNextFourWeeks(ical.parseICS(icalData)))
     .catch((error) => console.error('Error:', error));
@@ -159,10 +164,68 @@ function printEventsForNextFourWeeks(icalData: { [x: string]: any }) {
 
   return arrayDates;
 }
+export function AlgoliaSearch() {
+  useEffect(() => {
+    const customButton = document.querySelector('.herobtn');
+    const docSearchButton = document.querySelector(
+      '.DocSearch-Button',
+    ) as HTMLButtonElement;
+
+    if (customButton && docSearchButton) {
+      customButton.addEventListener('click', () => {
+        docSearchButton.click();
+      });
+    }
+  }, []);
+
+  return (
+    <div className='flex herobtn items-center justify-center font-semibold w-[194px] h-[40px] rounded border-2 border-white dark:border-none hover:bg-blue-700 transition-all duration-300 ease-in-out text-white bg-primary mx-auto dark:shadow-2xl cursor-pointer'>
+      <div className='flex flex-row justify-center items-center mr-4'>
+        <DocSearch
+          appId={algoliaAppId}
+          apiKey={algoliaApiKey}
+          indexName='json-schema'
+        />
+        Search
+      </div>
+    </div>
+  );
+}
 const Home = (props: any) => {
   const blogPosts = props.blogPosts;
   const timeToRead = Math.ceil(readingTime(blogPosts[0].content).minutes);
+  const { theme } = useTheme();
 
+  const [asyncapi_logo, setAsyncapi_logo] = useState('');
+  const [vpsserver_logo, setVPSserver_logo] = useState('');
+  const [airbnb_logo, setAirbnb_logo] = useState('');
+  const [postman_logo, setPostman_logo] = useState('');
+  const [endjin_logo, setEndjin_logo] = useState('');
+  const [llc_logo, setLlc_logo] = useState('');
+  const [common_room_logo, setCommon_room_logo] = useState('');
+  const [slack_logo, setSlack_logo] = useState('');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      setAsyncapi_logo('/img/logos/dark-mode/asyncapi_white.svg');
+      setAirbnb_logo('/img/logos/dark-mode/airbnb_white.png');
+      setPostman_logo('/img/logos/usedby/postman-white.png');
+      setEndjin_logo('/img/logos/sponsors/endjin-logo.svg');
+      setLlc_logo('/img/logos/dark-mode/llc_white.svg');
+      setCommon_room_logo('/img/logos/dark-mode/common-room_white.svg');
+      setSlack_logo('/img/logos/dark-mode/slack_white.svg');
+      setVPSserver_logo('/img/logos/sponsors/vps-server-logo.svg');
+    } else {
+      setAsyncapi_logo('/img/logos/sponsors/asyncapi-logo-dark.svg');
+      setAirbnb_logo('/img/logos/sponsors/airbnb-logo.png');
+      setPostman_logo('/img/logos/sponsors/postman_logo-orange.svg');
+      setEndjin_logo('/img/logos/sponsors/endjin-logo.svg');
+      setLlc_logo('/img/logos/sponsors/llc-logo.svg');
+      setCommon_room_logo('/img/logos/supported/common-room.svg');
+      setSlack_logo('/img/logos/supported/slack-logo.svg');
+      setVPSserver_logo('/img/logos/sponsors/vps-server-logo.svg');
+    }
+  }, [theme]);
   return (
     <div>
       <div className='flex flex-col items-center'>
@@ -181,25 +244,17 @@ const Home = (props: any) => {
             <div className='lg:w-[650px]  mx-auto my-10 grid grid-cols-1 lg:grid-cols-3 gap-8 justify-items-center '>
               <Link
                 href='/learn/getting-started-step-by-step'
-                className=' flex items-center justify-center rounded border-2 border-white text-white w-[194px] h-[40px] font-semibold  dark:shadow-2xl'
+                className='flex items-center justify-center rounded border-2 border-white dark:border-none hover:bg-blue-700 transition-all duration-300 ease-in-out text-white w-[194px] h-[40px] font-semibold bg-primary dark:shadow-2xl'
               >
                 Getting started
               </Link>
               <Link
                 href='/slack'
-                className=' flex items-center justify-center rounded border-2 border-white text-white  w-[194px] h-[40px] font-semibold dark:border-shadow-white  dark:shadow-2xl'
+                className='flex items-center justify-center rounded border-2 border-white dark:border-none hover:bg-blue-700 transition-all duration-300 ease-in-out text-white  w-[194px] h-[40px] font-semibold bg-primary dark:shadow-2xl'
               >
                 Join Slack
               </Link>
-
-              <div className='flex herobtn items-center justify-center font-semibold w-[194px] h-[40px] rounded border-2 border-white text-white mx-auto  dark:shadow-2xl'>
-                <DocSearch
-                  appId='6ZT4KX2OUI'
-                  apiKey='69f76fba13585144f6686622e9c8f2a8'
-                  indexName='json-schema'
-                />
-                <p>Search</p>
-              </div>
+              <AlgoliaSearch />
             </div>
 
             <div className='mb-16 md:mb-36  mx-auto w-full md:w-5/6 lg:w-full'>
@@ -243,7 +298,7 @@ const Home = (props: any) => {
             <h2 className='text-h3mobile md:text-h3 font-bold mb-6 dark:text-slate-200'>
               Why JSON Schema?
             </h2>
-            <p className='mb-6 leading-5 text-h5mobile md:text-h5 leading-7 dark:text-slate-300'>
+            <p className='mb-6 text-h5mobile md:text-h5 leading-7 dark:text-slate-300'>
               While JSON is probably the most popular format for exchanging
               data, JSON Schema is the vocabulary that enables JSON data
               consistency, validity, and interoperability at scale.
@@ -297,12 +352,12 @@ const Home = (props: any) => {
           </div>
         </section>
 
-        <section className='w-full h-[300px] lg:h-[367px] bg-gradient-to-r from-primary from-1.95% to-endBlue clip-both dark:from-[#002C34] dark:to-[#023e8a]'>
-          <div className='lg:w-full mx-auto text-center mt-28 '>
+        <section className='w-full h-[300px] lg:h-[367px] bg-gradient-to-r from-primary from-1.95% to-endBlue clip-both dark:from-[#002C34] dark:to-[#023e8a] grid items-center'>
+          <div className='lg:w-full mx-auto text-center  '>
             <h2 className='text-h3mobile lg:text-h3 text-white mb-6'>
               Start learning JSON Schema
             </h2>
-            <button className='w-[170px] h-[45px] mx-auto rounded border-2 bg-primary text-white font-semibold dark:bg-[560bad] dark:border-none'>
+            <button className='w-[170px] h-[45px] mx-auto hover:bg-blue-700 transition-all duration-300 ease-in-out rounded border-2 bg-primary text-white font-semibold dark:border-none'>
               <a href='/learn/getting-started-step-by-step '>Read the docs</a>
             </button>
           </div>
@@ -325,7 +380,7 @@ const Home = (props: any) => {
               Generators, Linters, and other JSON Schema Utilities made by this
               amazing Community.
             </p>
-            <button className='w-full md:w-1/2 md:ml-28 lg:ml-0 mx-auto  h-[45px] rounded border-2 bg-primary text-white dark:border-none'>
+            <button className='w-full md:w-1/2 md:ml-28 lg:ml-0 mx-auto hover:bg-blue-700 transition-all duration-300 ease-in-out h-[45px] rounded border-2 bg-primary text-white dark:border-none'>
               <a href='/implementations/'>Explore</a>
             </button>
           </div>
@@ -348,7 +403,7 @@ const Home = (props: any) => {
             </p>
           </div>
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12 mx-auto w-5/6 md:w-3/5 lg:w-5/6'>
-            <div className='w-full mb-6 dark:shadow-2xl'>
+            <div className='p-4 w-full mb-6 dark:shadow-2xl'>
               <Link href='https://json-schema.org/slack'>
                 <h3 className='mb-4 font-semibold flex items-center dark:text-slate-200'>
                   Join the JSON Schema Slack Workspace!
@@ -364,7 +419,7 @@ const Home = (props: any) => {
                   projects, and connect with +5000 practitioners and experts.
                 </p>
               </Link>
-              <button className='w-full lg:w-1/2 rounded border-2 bg-primary text-white h-[40px] flex items-center justify-center dark:border-none '>
+              <button className='w-full lg:w-1/2 rounded border-2 bg-primary hover:bg-blue-700 transition-all duration-300 ease-in-out text-white h-[40px] flex items-center justify-center mx-auto dark:border-none'>
                 <a
                   href='https://json-schema.org/slack'
                   className='flex items-center '
@@ -378,7 +433,7 @@ const Home = (props: any) => {
               </button>
             </div>
             {/* BlogPost Data */}
-            <div className='w-full mb-6 dark:shadow-2xl'>
+            <div className='p-4 w-full mb-6 dark:shadow-2xl'>
               <Link href={`/blog/posts/${blogPosts[0].slug}`}>
                 <h3 className='mb-5 font-semibold pt-1 dark:text-slate-200'>
                   The JSON Schema Blog
@@ -423,14 +478,14 @@ const Home = (props: any) => {
               <div>
                 <Link
                   href={`/blog/posts/${blogPosts[0].slug}`}
-                  className='block w-full lg:w-1/2 rounded border-2 bg-primary text-white  h-[40px] text-center pt-1 semi-bold flex items-center justify-center dark:border-none '
+                  className=' w-full lg:w-1/2 rounded border-2 bg-primary text-white hover:bg-blue-700 transition-all duration-300 ease-in-out h-[40px] text-center pt-1 semi-bold flex items-center justify-center mx-auto dark:border-none'
                 >
                   Read more{' '}
                 </Link>
               </div>
             </div>
             <div>
-              <div className='md:w-full mb-6 mr-4 dark:shadow-2xl'>
+              <div className='p-4 md:w-full mb-6 mr-4 dark:shadow-2xl'>
                 <h3 className='mb-2 font-semibold dark:text-slate-200'>
                   JSON Schema Community Meetings & Events
                 </h3>
@@ -441,19 +496,19 @@ const Home = (props: any) => {
                   are every Monday at 14:00 PT.
                 </p>
                 <div className=''>
-                  <button className='max-w-[300px] w-full text-center rounded border-2 bg-primary text-white  h-[40px] mb-4 flex items-center justify-center dark:border-none '>
+                  <button className='max-w-[300px] w-full text-center rounded border-2 bg-primary hover:bg-blue-700 transition-all duration-300 ease-in-out text-white  h-[40px] mb-4 flex items-center justify-center mx-auto dark:border-none'>
                     <a href='https://github.com/orgs/json-schema-org/discussions/35'>
                       Open Community Working Meetings
                     </a>
                   </button>
-                  <button className='max-w-[200px] w-full text-center rounded border-2 bg-primary text-white  h-[40px] flex items-center justify-center dark:border-none '>
+                  <button className='max-w-[200px] w-full text-center rounded border-2 bg-primary hover:bg-blue-700 transition-all duration-300 ease-in-out text-white  h-[40px] flex items-center justify-center mx-auto dark:border-none'>
                     <a href='https://github.com/orgs/json-schema-org/discussions/34/'>
                       Office Hours
                     </a>
                   </button>
                 </div>
               </div>
-              <div>
+              <div className='p-2'>
                 <div>
                   <Headline4>Upcoming events</Headline4>
                   <div>
@@ -478,8 +533,8 @@ const Home = (props: any) => {
                 </div>
 
                 <a
-                  href='https://calendar.google.com/calendar/u/0/embed?src=c_8r4g9r3etmrmt83fm2gljbatos@group.calendar.google.com'
-                  className='block w-full lg:w-1/2 rounded border-2 bg-primary text-white  h-[40px] text-center pt-1 flex items-center justify-center dark:border-none '
+                  href='https://calendar.google.com/calendar/embed?src=info%40json-schema.org&ctz=Europe%2FLondon'
+                  className='w-full lg:w-1/2 rounded border-2 bg-primary text-white hover:bg-blue-700 transition-all duration-300 ease-in-out h-[40px] text-center flex items-center justify-center mx-auto dark:border-none'
                   target='_blank'
                   rel='noopener noreferrer'
                 >
@@ -492,12 +547,12 @@ const Home = (props: any) => {
 
         {/* News & Blogs */}
 
-        <section className='w-full h-[300px] lg:h-[367px] bg-gradient-to-r from-primary from-1.95% to-endBlue clip-both dark:from-[#002C34] dark:to-[#023e8a]'>
-          <div className='lg:w-full mx-auto text-center mt-28 '>
+        <section className='w-full h-[300px] lg:h-[367px] bg-gradient-to-r from-primary from-1.95% to-endBlue clip-both dark:from-[#002C34] dark:to-[#023e8a] grid items-center'>
+          <div className='lg:w-full mx-auto text-center'>
             <h2 className='text-h3mobile lg:text-h3 text-white mb-6 dark:text-slate-200'>
               Start contributing to JSON Schema
             </h2>
-            <button className='w-[170px] h-[45px] mx-auto rounded border-2 bg-primary text-white font-semibold dark:border-none '>
+            <button className='w-[170px] h-[45px] mx-auto rounded border-2 bg-primary hover:bg-blue-700 transition-all duration-300 ease-in-out text-white font-semibold dark:border-none'>
               <a href='https://github.com/json-schema-org#-contributing-to-json-schema'>
                 Contribute
               </a>
@@ -508,21 +563,21 @@ const Home = (props: any) => {
         {/* Sponsors */}
 
         <section className='my-16'>
-          <div className='text-center mb-12'>
+          <div className='text-center mb-4'>
             <h2 className='text-h3mobile md:text-h3 font-semibold mb-2 dark:text-slate-200'>
               Sponsors
             </h2>
             <p className='w-5/6 lg:w-3/5 mx-auto dark:text-slate-300'>
               If you ❤️ JSON Schema consider becoming a{' '}
               <a
-                href='https://opencollective.com/json-schema/contribute'
+                href='https://json-schema.org/overview/sponsors'
                 className='border-b border-black'
               >
                 sponsor
               </a>{' '}
               or a{' '}
               <a
-                href='https://opencollective.com/json-schema/contribute'
+                href='https://json-schema.org/overview/sponsors#benefits-of-being-an-individual-backer'
                 className='border-b border-black '
               >
                 backer
@@ -538,52 +593,96 @@ const Home = (props: any) => {
               </a>
             </p>
           </div>
-          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12 items-center mx-auto  md:mx-0 px-4 '>
-            <a href=' https://www.asyncapi.com/'>
-              <img
-                src='/img/logos/sponsors/asyncapi-logo-dark.svg'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://www.airbnb.com/'>
-              <img
-                src='/img/logos/sponsors/airbnb-logo.svg'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://stoplight.io/'>
-              <img
-                src='/img/logos/sponsors/stoplight-logo.svg'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://www.postman.com/'>
-              <img
-                src='/img/logos/sponsors/Postman_logo-orange.svg'
-                className='w-44'
-              />
-            </a>
-            <a href='https://retool.com/'>
-              <img
-                src='/img/logos/sponsors/retool-logo.svg'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://www.apideck.com/'>
-              <img
-                src='/img/logos/sponsors/apideck-logo.png'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://endjin.com/'>
-              <img
-                src='/img/logos/sponsors/endjin-logo.svg'
-                className=' w-44'
-              />
-            </a>
-            <a href='https://www.llc.org/'>
-              <img src='/img/logos/sponsors/llc-logo.svg' className=' w-44' />
-            </a>
+          <div className=' text-center mb-12 '>
+            <h3 className='p-4 text-h4mobile md:text-h4 font-semibold my-4 dark:text-slate-200'>
+              Gold Sponsors
+            </h3>
+            <button className='w-[310px] h-[180px] mx-auto rounded-lg border-2 border-dotted bg-primary text-white font-semibold flex items-center justify-center space-x-2 cursor-pointer px-3'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-6 w-6'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 4v16m8-8H4'
+                />
+              </svg>
+              <a
+                href='https://opencollective.com/json-schema#category-CONTRIBUTE'
+                className='block'
+              >
+                Your logo here
+              </a>
+            </button>
+            <h3 className='p-4 text-h4mobile md:text-h4 font-semibold my-4 dark:text-slate-200'>
+              Silver Sponsors
+            </h3>
+            <button className='w-[200px] h-[120px] mx-auto rounded-lg border-2 border-dotted bg-primary text-white font-semibold flex items-center justify-center space-x-2 cursor-pointer px-3'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-6 w-6'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 4v16m8-8H4'
+                />
+              </svg>
+              <a href='https://opencollective.com/json-schema#category-CONTRIBUTE'>
+                Your logo here
+              </a>
+            </button>
+            <h3 className='p-4 text-h4mobile md:text-h4 font-semibold my-4 dark:text-slate-200'>
+              Bronze Sponsors
+            </h3>
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12 items-center mx-auto  md:mx-0 px-4 '>
+              <a href=' https://www.asyncapi.com/'>
+                <img src={asyncapi_logo} className=' w-44' />
+              </a>
+              <a href='https://www.airbnb.com/'>
+                <img src={airbnb_logo} className=' w-44' />
+              </a>
+              <a href='https://www.postman.com/'>
+                <img src={postman_logo} className=' w-44' />
+              </a>
+              <a href='https://endjin.com/'>
+                <img src={endjin_logo} className=' w-44' />
+              </a>
+              <a href='https://www.llc.org/'>
+                <img src={llc_logo} className=' w-44' />
+              </a>
+              <a href='https://www.vpsserver.com/en-us/'>
+                <img src={vpsserver_logo} className=' w-44' />
+              </a>
+              <button className='w-[176px] h-[44px] mx-auto rounded-lg border-2 border-dotted bg-primary text-white font-semibold flex items-center justify-center space-x-2 cursor-pointer px-3'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-6 w-6'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 4v16m8-8H4'
+                  />
+                </svg>
+                <a href='https://opencollective.com/json-schema#category-CONTRIBUTE'>
+                  Your logo here
+                </a>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -609,18 +708,12 @@ const Home = (props: any) => {
           </div>
           <div className='flex flex-col items-center md:flex-row justify-center text-center gap-x-14 gap-y-4'>
             <a href='https://www.commonroom.io'>
-              <img
-                src='/img/logos/supported/common-room.svg'
-                className='w-48 md:w-56'
-              />
+              <img src={common_room_logo} className='w-48 md:w-56' />
             </a>
             <a href='https://json-schema.org/slack'>
-              <img
-                src='/img/logos/supported/slack-logo.svg'
-                className='w-24 md:w-32'
-              />
+              <img src={slack_logo} className='w-24 md:w-32' />
             </a>
-          </div>
+          </div>{' '}
         </section>
       </div>
     </div>

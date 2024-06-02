@@ -140,8 +140,9 @@ const TabsGroup = ({ markdown }: { markdown: string }) => {
                 className={classnames(
                   'p-4 px-6 text-slate-700 font-medium border-b-2 rounded-t-lg',
                   {
-                    'border-blue-400 text-blue-500 bg-blue-50': isActive,
-                    'border-white/0 cursor-pointer text-slate-700 hover:border-blue-50 hover:bg-blue-50/20':
+                    'border-blue-400 text-blue-500 bg-blue-50 dark:bg-slate-900 dark:text-white':
+                      isActive,
+                    'border-white/0 cursor-pointer dark:text-white text-slate-700 hover:border-blue-50  hover:bg-blue-50/20':
                       !isActive,
                   },
                 )}
@@ -152,7 +153,7 @@ const TabsGroup = ({ markdown }: { markdown: string }) => {
           })}
         </div>
       </div>
-      <div className='border-slate-100 mb-4 p-6 from-slate-50/50 to-slate-50/100 rounded-xl bg-gradient-to-b'>
+      <div className='border-slate-100 mb-4 p-6 from-slate-50/50 to-slate-50/100 rounded-xl bg-gradient-to-b dark:from-slate-700/50 dark:to-slate-900/50'>
         <StyledMarkdownBlock markdown={activeTab.markdown} />
       </div>
     </div>
@@ -190,15 +191,29 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
               ),
             },
             a: {
-              component: ({ children, href, title }) => {
+              component: ({ children, href, title, className }) => {
                 if (!href) return children;
+
+                // Check if the existing className starts with 'plausible-event-name'
+                const additionalClass =
+                  className && className.startsWith('plausible-event-name')
+                    ? className
+                    : '';
+
+                // Define the base className
+                const baseClassName = 'text-blue-500 hover:text-blue-600';
+
+                // Combine the base className with the additionalClass if it exists
+                const combinedClassName =
+                  `${baseClassName} ${additionalClass}`.trim();
+
                 const link =
                   href.charAt(0) === '/' ? (
                     <Link
                       as={href}
                       href='/'
                       title={title}
-                      className='text-blue-500 hover:text-blue-600'
+                      className={combinedClassName} // Use the combined className
                     >
                       {children}
                     </Link>
@@ -206,7 +221,7 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
                     <a
                       href={href}
                       title={title}
-                      className='text-blue-500 hover:text-blue-600'
+                      className={combinedClassName} // Use the combined className
                     >
                       {children}
                     </a>
@@ -252,7 +267,7 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
             },
             th: {
               component: ({ children }) => (
-                <th className='border border-slate-300 p-4 font-semibold'>
+                <th className='border border-slate-300 dark:text-white p-4 dark:bg-slate-900 font-semibold text-black'>
                   {children}
                 </th>
               ),
@@ -281,7 +296,7 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
               }
 
               return (
-                <div className='overflow-x-auto flex-basis-0 max-w-full min-w-0 shrink max-w-[100%] max-w-screen-sm lg:max-w-[800px] xl:max-w-[900px]'>
+                <div className='overflow-x-auto flex-basis-0 max-w-full min-w-0 shrink lg:max-w-[800px] xl:max-w-[900px]'>
                   {/* definitely not the best way to prevent overflowing. found no better way that worked */}
                   <Highlight
                     language={language}
@@ -337,6 +352,25 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
                     {children}
                   </details>
                 );
+              },
+            },
+            userevent: {
+              component: ({ children, type }) => {
+                // Use React.Children.map to iterate over each child element
+                const modifiedChildren = React.Children.map(
+                  children,
+                  (child) => {
+                    // Clone each child element
+                    const clonedChild = React.cloneElement(child, {
+                      // Append the type class to the existing className
+                      className: classnames(child.props.className, type),
+                    });
+
+                    return clonedChild;
+                  },
+                );
+
+                return <>{modifiedChildren}</>;
               },
             },
             Star: {
@@ -461,7 +495,7 @@ const StyledMarkdownBlock = ({ markdown }: { markdown: string }) => {
                 const fullMarkdown = useContext(FullMarkdownContext);
                 if (!fullMarkdown) return null;
                 return (
-                  <div className='text-blue-500 mt-3 bg-slate-50 pt-6 pb-3 px-3 rounded-l border-l-blue-400 border-l-[3px]'>
+                  <div className='mt-3 bg-slate-50 dark:bg-slate-900 pt-6 pb-3 pr-3 border-dotted border-l-blue-400 border-l-[3px]'>
                     <TableOfContentMarkdown
                       markdown={fullMarkdown}
                       depth={depth}
@@ -496,27 +530,51 @@ export function TableOfContentMarkdown({
               return (
                 <a
                   href={`#${slug}`}
-                  className='block cursor-pointer mb-3 text-sm leading-4 text-slate-700 hover:text-blue-500'
+                  className='block cursor-pointer mb-3 max-sm:text-sm text-slate-600 dark:text-slate-300 leading-4 ml-[-0.40rem] font-medium'
                 >
+                  <span className='mr-1 text-blue-400 text-[1.5em]'>
+                    &#9679;
+                  </span>
                   {children}
                 </a>
               );
             },
           },
-          h2: {
-            component: ({ children }) => {
-              const slug = slugifyMarkdownHeadline(children);
-              return (
-                <a
-                  href={`#${slug}`}
-                  className='block cursor-pointer mb-3 text-sm leading-4 ml-3 hover:text-blue-500'
-                >
-                  {children}
-                </a>
-              );
-            },
-          },
+
           /* eslint-disable */
+          h2:
+            depth === 0
+              ? {
+                  component: ({ children }) => {
+                    const slug = slugifyMarkdownHeadline(children);
+                    return (
+                      <a
+                        href={`#${slug}`}
+                        className='block cursor-pointer mb-3 text-slate-600  dark:text-slate-300 leading-4 font-medium'
+                      >
+                        {children}
+                      </a>
+                    );
+                  },
+                }
+              : depth >= 2
+                ? {
+                    component: ({ children }) => {
+                      const slug = slugifyMarkdownHeadline(children);
+                      return (
+                        <a
+                          href={`#${slug}`}
+                          className='block cursor-pointer mb-3 max-sm:text-sm text-slate-600 dark:text-slate-300 leading-4 -ml-[9px] max-sm:-ml-[7px] font-medium'
+                        >
+                          <span className='mr-1 text-blue-400 text-[1em]'>
+                            &#9679;
+                          </span>
+                          {children}
+                        </a>
+                      );
+                    },
+                  }
+                : { component: () => null },
           h3:
             depth >= 3
               ? {
@@ -525,8 +583,15 @@ export function TableOfContentMarkdown({
                     return (
                       <a
                         href={`#${slug}`}
-                        className='block cursor-pointer mb-3 text-sm leading-4 ml-7 hover:text-blue-500'
+                        className='flex flex-row items-center cursor-pointer mb-3 max-sm:text-sm text-slate-600 dark:text-slate-300 leading-4 ml-[-0.15rem]'
                       >
+                        <span className='text-blue-400 text-[0.28em] ml-1 max-sm:w-[18px]'>
+                          &#9679; &#9679; &#9679; &#9679;
+                        </span>
+                        <span className='mr-1 text-blue-400 text-[0.75em]'>
+                          &#9679;
+                        </span>
+
                         {children}
                       </a>
                     );
@@ -541,8 +606,16 @@ export function TableOfContentMarkdown({
                     return (
                       <a
                         href={`#${slug}`}
-                        className='block cursor-pointer mb-3 text-sm leading-4 ml-10 hover:text-blue-500'
+                        className='flex flex-row items-center cursor-pointer mb-3 max-sm:text-sm text-slate-600 dark:text-slate-300 leading-4 ml-[-0.15rem]'
                       >
+                        <span className='text-blue-400 text-[0.28em] ml-1 max-sm:w-[48px]'>
+                          &#9679; &#9679; &#9679; &#9679; &#9679; &#9679;
+                          &#9679; &#9679; &#9679; &#9679; &#9679;
+                        </span>
+                        <span className='mr-1 text-blue-400 text-[0.75em]'>
+                          &#9679;
+                        </span>
+
                         {children}
                       </a>
                     );
